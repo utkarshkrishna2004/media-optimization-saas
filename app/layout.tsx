@@ -15,7 +15,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
     title: "media-optimization-saas",
-    description: "AI-enabled platform for optimizing images and videos at scale.",
+    description:
+        "AI-enabled platform for optimizing images and videos at scale.",
 };
 
 export default function RootLayout({
