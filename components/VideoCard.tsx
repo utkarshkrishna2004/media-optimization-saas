@@ -43,9 +43,9 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
             src: publicId,
             width: 400,
             height: 225,
-            rawTransformations: [
-                "e_preview:duration_15:max_seg_9:min_seg_dur_1",
-            ],
+            crop: "fill",
+            quality: "auto",
+            format: "mp4",
         });
     }, []);
 
@@ -91,8 +91,11 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
                             autoPlay
                             muted
                             loop
-                            className="w-full h-full object-cover"
-                            onError={handlePreviewError}
+                            playsInline
+                            onClick={(e) => {
+                                e.currentTarget.requestFullscreen();
+                            }}
+                            className="w-full h-full object-cover cursor-pointer"
                         />
                     )
                 ) : (
