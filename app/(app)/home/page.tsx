@@ -3,8 +3,12 @@ import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import VideoCard from "@/components/VideoCard";
 import { Video } from "@/types";
+import { useAuth } from "@clerk/nextjs";
+import { notify } from "@/lib/toast";
 
 function Home() {
+    const { userId } = useAuth();
+
     const [videos, setVideos] = useState<Video[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -15,11 +19,10 @@ function Home() {
             if (Array.isArray(response.data)) {
                 setVideos(response.data);
             } else {
-                throw new Error(" Unexpected response format");
+                throw new Error("Unexpected response format");
             }
         } catch (error) {
-            console.log(error);
-            setError("Failed to fetch videos");
+            notify.error("Failed to fetch videos");
         } finally {
             setLoading(false);
         }
@@ -56,6 +59,7 @@ function Home() {
                         <VideoCard
                             key={video.id}
                             video={video}
+                            currentUserId={userId}
                             onDownload={handleDownload}
                         />
                     ))}

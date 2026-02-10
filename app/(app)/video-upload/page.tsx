@@ -5,6 +5,8 @@ import axios from "axios";
 import { useRouter } from "next/navigation";
 // once the upload is done, we'll be redirecting the user to the homepage
 
+import { notify } from "@/lib/toast";
+
 function VideoUpload() {
     const [file, setFile] = useState<File | null>(null);
     const [title, setTitle] = useState("");
@@ -21,12 +23,13 @@ function VideoUpload() {
         if (!file) return;
 
         if (file.size > MAX_FILE_SIZE) {
-            // add notification
-            alert("File size too large!");
+            notify.error("File size too large (max 70MB)");
             return;
         }
 
         setIsUploading(true);
+        const toastId = notify.loading("Uploading video...");
+
         const formData = new FormData();
         formData.append("file", file);
         formData.append("title", title);
@@ -34,12 +37,11 @@ function VideoUpload() {
         formData.append("originalSize", file.size.toString());
 
         try {
-            const response = await axios.post("/api/video-upload", formData);
-            // check for 200 response
-            router.push("/");
+            await axios.post("/api/video-upload", formData);
+            notify.success("Video uploaded successfully", toastId);
+            router.push("/home");
         } catch (error) {
-            console.log(error);
-            // notification for failure
+            notify.error("Upload failed", toastId);
         } finally {
             setIsUploading(false);
         }

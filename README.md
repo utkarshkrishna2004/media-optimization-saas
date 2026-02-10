@@ -1,36 +1,109 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Media Optimization SaaS
 
-## Getting Started
+A **Media Optimization SaaS** that demonstrates real-world engineering decisions around **media-heavy applications**.  
+Built using **Next.js App Router**, **Cloudinary**, **Prisma**, and **PostgreSQL (NeonDB)**, the project focuses on **video compression** and **context-aware image optimization** for different platforms.
 
-First, run the development server:
+---
+
+## Demo
+
+> Demo video placeholder (will be updated)
+
+
+---
+
+## Core Features
+
+### Video Optimization
+- Upload videos with title and description
+- Automatic compression using Cloudinary
+- Content-aware hover preview (AI-selected segments)
+- Download optimized videos
+- Displays original size, compressed size, duration, and compression percentage
+
+### Social Media Image Formats
+- Upload an image once
+- Generate optimized formats for:
+  - Instagram (1:1, 4:5)
+  - Twitter (16:9, Header)
+  - Facebook Cover
+- AI-based context-aware cropping (not naive resizing)
+- Instant preview and download
+
+### Authentication & UX
+- Secure email-based authentication with Clerk
+- Protected routes for uploads and transformations
+- Centralized toast notifications
+- Responsive UI built with Tailwind CSS and DaisyUI
+
+---
+
+## Tech Stack
+
+- **Next.js (App Router)**  
+  Full-stack React framework used for routing, layouts, and API routes.
+
+- **Cloudinary**  
+  Handles media storage, AI-based image/video transformations, and CDN delivery.  
+  All heavy media processing is offloaded from the application server.
+
+- **PostgreSQL (NeonDB)**  
+  Serverless relational database used to store media metadata and ownership.
+
+- **Prisma**  
+  Type-safe ORM for schema modeling, migrations, and database access.
+
+- **Clerk**  
+  Authentication and session management with email verification.
+
+---
+
+## High-Level Architecture
+
+![alt text](image.png)
+
+
+**Design Choice:**  
+Media files are stored in Cloudinary.  
+The database stores **only metadata and references**, never large files.
+
+---
+
+## Local Setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- git clone https://github.com/utkarshkrishna2004/media-optimization-saas.git
+- cd media-optimization-saas
+- npm install
+```
+## Create a .env file:
+```bash
+- NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = ******
+- CLERK_SECRET_KEY = ******
+
+- NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+- NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+
+- DATABASE_URL = ******
+
+
+- NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME = ******
+- CLOUDINARY_API_KEY = ******
+- CLOUDINARY_API_SECRET = ******
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Run migrations and start the app:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+- npx prisma migrate dev
+- npm run dev
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
 
-## Learn More
+## Author
 
-To learn more about Next.js, take a look at the following resources:
+### Utkarsh Krishna
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+GitHub: https://github.com/utkarshkrishna2004
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+LinkedIn: https://www.linkedin.com/in/utkarsh-krishna-3bab41240/

@@ -15,7 +15,7 @@ import {
 
 const sidebarItems = [
     { href: "/home", icon: LayoutDashboardIcon, label: "Home Page" },
-    { href: "/social-share", icon: Share2Icon, label: "Social Share" },
+    { href: "/social-share", icon: Share2Icon, label: "Image Transformer" },
     { href: "/video-upload", icon: UploadIcon, label: "Video Upload" },
 ];
 
@@ -62,7 +62,7 @@ export default function AppLayout({
                         <div className="flex-1">
                             <Link href="/" onClick={handleLogoClick}>
                                 <div className="btn btn-ghost normal-case text-2xl font-bold tracking-tight cursor-pointer">
-                                    Cloudinary Showcase
+                                    Media Optimization SaaS
                                 </div>
                             </Link>
                         </div>

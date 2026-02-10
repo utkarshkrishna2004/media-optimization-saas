@@ -13,6 +13,7 @@ cloudinary.config({
 
 interface CloudinaryUploadResult {
     public_id: string;
+    secure_url: string;
     bytes: number;
     duration?: number;
 }
@@ -21,7 +22,10 @@ export async function POST(request: NextRequest) {
     try {
         const { userId } = await auth();
         if (!userId) {
-            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+            return NextResponse.json(
+                { error: "Unauthorized" },
+                { status: 401 },
+            );
         }
 
         const formData = await request.formData();
@@ -33,35 +37,41 @@ export async function POST(request: NextRequest) {
         if (!file || !title || !originalSize) {
             return NextResponse.json(
                 { error: "Missing required fields" },
-                { status: 400 }
+                { status: 400 },
             );
         }
 
         const buffer = Buffer.from(await file.arrayBuffer());
 
-        const result = await new Promise<CloudinaryUploadResult>((resolve, reject) => {
-            const uploadStream = cloudinary.uploader.upload_stream(
-                {
-                    resource_type: "video",
-                    folder: "video-uploads",
-                    transformation: [{ quality: "auto", fetch_format: "mp4" }],
-                },
-                (error, result) => {
-                    if (error) reject(error);
-                    else resolve(result as CloudinaryUploadResult);
-                }
-            );
-            uploadStream.end(buffer);
-        });
+        const result = await new Promise<CloudinaryUploadResult>(
+            (resolve, reject) => {
+                const uploadStream = cloudinary.uploader.upload_stream(
+                    {
+                        resource_type: "video",
+                        folder: "video-uploads",
+                        transformation: [
+                            { quality: "auto", fetch_format: "mp4" },
+                        ],
+                    },
+                    (error, result) => {
+                        if (error) reject(error);
+                        else resolve(result as CloudinaryUploadResult);
+                    },
+                );
+                uploadStream.end(buffer);
+            },
+        );
 
         const video = await prisma.video.create({
             data: {
                 title,
                 description,
                 publicId: result.public_id,
+                url: result.secure_url,
                 originalSize,
                 compressedSize: String(result.bytes),
                 duration: result.duration ?? 0,
+                userId
             },
         });
 
@@ -70,7 +80,7 @@ export async function POST(request: NextRequest) {
         console.error("Upload video failed", error);
         return NextResponse.json(
             { error: "Upload video failed" },
-            { status: 500 }
+            { status: 500 },
         );
     }
 }

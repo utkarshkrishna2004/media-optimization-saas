@@ -1,19 +1,26 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { getCldImageUrl, getCldVideoUrl } from "next-cloudinary";
-import { Download, Clock, FileDown, FileUp } from "lucide-react";
+import { Download, Clock, FileDown, FileUp, Trash2 } from "lucide-react";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { filesize } from "filesize";
 import { Video } from "@prisma/client";
 
+import { notify } from "@/lib/toast";
+
 dayjs.extend(relativeTime);
 
 interface VideoCardProps {
     video: Video;
+    currentUserId: string | null | undefined;
     onDownload: (url: string, title: string) => void;
 }
 
-const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
+const VideoCard: React.FC<VideoCardProps> = ({
+    video,
+    currentUserId,
+    onDownload,
+}) => {
     const [isHovered, setIsHovered] = useState(false);
     const [previewError, setPreviewError] = useState(false);
 
@@ -27,14 +34,6 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
             format: "jpg",
             quality: "auto",
             assetType: "video",
-        });
-    }, []);
-
-    const getFullVideoUrl = useCallback((publicId: string) => {
-        return getCldVideoUrl({
-            src: publicId,
-            width: 1920,
-            height: 1080,
         });
     }, []);
 
@@ -70,6 +69,28 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
     const handlePreviewError = () => {
         setPreviewError(true);
     };
+
+    const handleDelete = async () => {
+        const confirmed = confirm("Delete this video permanently?");
+        if (!confirmed) return;
+
+        const toastId = notify.loading("Deleting video...");
+
+        try {
+            const res = await fetch(`/api/videos/${video.id}`, {
+                method: "DELETE",
+            });
+
+            if (!res.ok) throw new Error();
+
+            notify.success("Video deleted", toastId);
+            window.location.reload(); // (we can remove later if you want)
+        } catch {
+            notify.error("Failed to delete video", toastId);
+        }
+    };
+
+    const isOwner = video.userId === currentUserId;
 
     return (
         <div
@@ -110,14 +131,18 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
                     {formatDuration(video.duration)}
                 </div>
             </figure>
+
             <div className="card-body p-4">
                 <h2 className="card-title text-lg font-bold">{video.title}</h2>
+
                 <p className="text-sm text-base-content opacity-70 mb-4">
                     {video.description}
                 </p>
+
                 <p className="text-sm text-base-content opacity-70 mb-4">
                     Uploaded {dayjs(video.createdAt).fromNow()}
                 </p>
+
                 <div className="grid grid-cols-2 gap-4 text-sm">
                     <div className="flex items-center">
                         <FileUp size={18} className="mr-2 text-primary" />
@@ -126,6 +151,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
                             <div>{formatSize(Number(video.originalSize))}</div>
                         </div>
                     </div>
+
                     <div className="flex items-center">
                         <FileDown size={18} className="mr-2 text-secondary" />
                         <div>
@@ -136,6 +162,7 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
                         </div>
                     </div>
                 </div>
+
                 <div className="flex justify-between items-center mt-4">
                     <div className="text-sm font-semibold">
                         Compression:{" "}
@@ -143,18 +170,36 @@ const VideoCard: React.FC<VideoCardProps> = ({ video, onDownload }) => {
                             {compressionPercentage}%
                         </span>
                     </div>
-                    <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() =>
-                            onDownload(
-                                getFullVideoUrl(video.publicId),
-                                video.title,
-                            )
-                        }
-                    >
-                        <Download size={16} />
-                    </button>
+
+                    <div className="flex gap-2">
+                        <button
+                            className="btn btn-primary btn-sm"
+                            disabled={!video.url}
+                            onClick={() => {
+                                if (!video.url) return;
+                                notify.success("Download started");
+                                onDownload(video.url, video.title);
+                            }}
+                        >
+                            <Download size={16} />
+                        </button>
+
+                        {isOwner && (
+                            <button
+                                className="btn btn-error btn-sm"
+                                onClick={handleDelete}
+                            >
+                                <Trash2 size={16} />
+                            </button>
+                        )}
+                    </div>
                 </div>
+
+                {!video.url && (
+                    <p className="text-xs text-warning mt-2">
+                        Re-upload required
+                    </p>
+                )}
             </div>
         </div>
     );
